@@ -1,0 +1,37 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "NODE_ENV=production webpack",
+    "dev": "webpack -w",
+    "lint": "eslint ./app/scripts/**/*",
+    "lint:fix": "eslint ./app/scripts/**/* --fix",
+    "type-check": "tsc",
+    "preinstall": "typesync | :"
+  },
+  "dependencies": {
+    "core-js": "3.6.5",
+    "p5": "~1.0.0",
+    "pixi.js": "~5.2.4"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-typescript": "^7.8.3",
+    "@types/babel__core": "^7.1.8",
+    "@types/babel__preset-env": "^7.9.0",
+    "@types/core-js": "2.5.3",
+    "@types/eslint": "^7.2.0",
+    "@types/p5": "~0.9.0",
+    "@types/webpack": "^4.41.17",
+    "babel-loader": "^8.0.6",
+    "eslint": "^7.2.0",
+    "fork-ts-checker-webpack-plugin": "^4.1.6",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.5",
+    "typesync": "^0.7.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  }
+}
