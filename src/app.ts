@@ -116,13 +116,13 @@ class ImageParticle {
 // ==================================================
 class ImageParticleSystem {
   private app: PIXI.Application;
-  private imageParticle: ImageParticle[];
+  private imageParticles: ImageParticle[];
   private renderer: PIXI.Renderer;
   private stage: PIXI.Container;
-  private container: PIXI.Container;
+  private particleContainer: PIXI.ParticleContainer;
 
   constructor() {
-    this.imageParticle = [];
+    this.imageParticles = [];
     this.app = new PIXI.Application({
       view: document.getElementById("viewport") as HTMLCanvasElement,
       backgroundColor: 0xFFFFFF,
@@ -132,14 +132,15 @@ class ImageParticleSystem {
     });
     this.renderer = this.app.renderer;
     this.stage = new PIXI.Container();
-    this.container = new PIXI.Container();
 
     this.createParticles();
+    this.particleContainer = new PIXI.ParticleContainer(this.imageParticles.length)
+    this.addParticlesToContainer();
     this.setup();
   }
 
   private setup() {
-    this.stage.addChild(this.container);
+    this.stage.addChild(this.particleContainer);
     document.body.appendChild(this.renderer.view);
   }
 
@@ -173,7 +174,6 @@ class ImageParticleSystem {
     const imageWidth = targetImage.width;
     const imageHeight = targetImage.height;
     const imageScale = Math.min((window.innerWidth - PADDING * 2) / imageWidth, (window.innerHeight - PADDING * 2) / imageHeight);
-    const texture = this.createParticleTexture();
     const fractionSizeX = imageWidth / PARTICLE_SIZE;
     const fractionSizeY = imageHeight / PARTICLE_SIZE;
     const offsetX = (window.innerWidth - Math.min(window.innerWidth, window.innerHeight)) / 2;
@@ -195,14 +195,21 @@ class ImageParticleSystem {
         originPosition.add(offsetX + PADDING, offsetY + PADDING);
 
         let particle = new ImageParticle(originPosition, originScale, originColor);
-        this.imageParticle.push(particle);
-        this.container.addChild(particle.createSprite(texture));
+        this.imageParticles.push(particle);
       }
     }
   }
 
+  addParticlesToContainer() {
+    const texture = this.createParticleTexture();
+
+    for (let imageParticle of this.imageParticles) {
+      this.particleContainer.addChild(imageParticle.createSprite(texture));
+    }
+  }
+
   updateStates() {
-    for (let imageParticle of this.imageParticle) {
+    for (let imageParticle of this.imageParticles) {
       imageParticle.updateState();
     }
   }
