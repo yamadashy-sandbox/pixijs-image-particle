@@ -64,7 +64,7 @@ class ImageParticle {
   }
 
   createSprite(texture: PIXI.Texture) {
-    this.sprite = new PIXI.Sprite(texture);
+    this.sprite = PIXI.Sprite.from(texture);
     this.sprite.tint = (this.color[0] << 16) + (this.color[1] << 8) + (this.color[2]);
     this.sprite.scale.x = this.sprite.scale.y = this.scale;
 
@@ -119,7 +119,6 @@ class ImageParticleSystem {
   private app: PIXI.Application;
   private imageParticles: ImageParticle[];
   private renderer: PIXI.Renderer;
-  private stage: PIXI.Container;
   private particleContainer: PIXI.ParticleContainer;
 
   constructor() {
@@ -132,16 +131,21 @@ class ImageParticleSystem {
       antialias: true,
     });
     this.renderer = this.app.renderer;
-    this.stage = new PIXI.Container();
 
     this.createParticles();
-    this.particleContainer = new PIXI.ParticleContainer(this.imageParticles.length)
+    this.particleContainer = new PIXI.ParticleContainer(this.imageParticles.length, {
+      vertices: false,
+      position: true,
+      rotation: false,
+      uvs: false,
+      tint: false
+    })
     this.addParticlesToContainer();
     this.setup();
   }
 
   private setup() {
-    this.stage.addChild(this.particleContainer);
+    this.app.stage.addChild(this.particleContainer);
     document.body.appendChild(this.renderer.view);
   }
 
@@ -168,7 +172,7 @@ class ImageParticleSystem {
     graphics.drawRect(0, 0, PARTICLE_SIZE, PARTICLE_SIZE);
     graphics.endFill();
 
-    return this.renderer.generateTexture(graphics, PIXI.SCALE_MODES.NEAREST, 2);
+    return this.renderer.generateTexture(graphics, PIXI.SCALE_MODES.LINEAR, 1);
   }
 
   private createParticles() {
@@ -216,7 +220,7 @@ class ImageParticleSystem {
   }
 
   render() {
-    this.renderer.render(this.stage);
+    this.renderer.render(this.app.stage);
   }
 }
 
