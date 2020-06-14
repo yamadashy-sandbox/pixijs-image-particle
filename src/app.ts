@@ -201,7 +201,7 @@ class ImageParticleSystem {
     }
   }
 
-  updateState() {
+  updateStates() {
     for (let imageParticle of this.imageParticle) {
       imageParticle.updateState();
     }
@@ -230,7 +230,7 @@ function sketch(p5instance: p5) {
   p5instance.draw = function() {
     repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
 
-    imageParticleSystem.updateState();
+    imageParticleSystem.updateStates();
     imageParticleSystem.render();
   }
 
