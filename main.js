@@ -80,7 +80,8 @@ class ImageParticleSystem {
     this.pointSprites = [];
     this.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
       view: document.getElementById("viewport"),
-      backgroundColor: 0xFFFFFF
+      backgroundColor: 0xFFFFFF,
+      antialias: true,
     });
     this.stage = new PIXI.Container();
     this.container = new PIXI.Container();
