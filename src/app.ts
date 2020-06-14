@@ -66,21 +66,22 @@ class ImageParticle {
   createSprite(texture: PIXI.Texture) {
     this.sprite = new PIXI.Sprite(texture);
     this.sprite.tint = (this.color[0] << 16) + (this.color[1] << 8) + (this.color[2]);
+    this.sprite.scale.x = this.sprite.scale.y = this.scale;
 
     return this.sprite;
   }
 
   updateState() {
-    // 計算
+    // calc position
     this.updateStateByMouse();
     this.updateStateByOrigin();
+
     this.velocity.mult(0.95);
     this.position.add(this.velocity);
 
-    // spriteの状態を更新
+    // update sprite state
     this.sprite.position.x = this.position.x;
     this.sprite.position.y = this.position.y;
-    this.sprite.scale.x = this.sprite.scale.y = this.scale;
   }
 
   private updateStateByMouse() {
