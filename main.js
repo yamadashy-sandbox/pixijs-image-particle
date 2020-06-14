@@ -1,6 +1,6 @@
 const IMAGE_URL = "https://avatars.githubusercontent.com/u/5019072?v=3";
 const PARTICLE_SIZE = 1; // image pixel size
-const PADDING = 70;
+const PADDING = 10;
 const DEFAULT_REPULSION_CHANGE_DISTANCE = 80;
 
 let repulsionChangeDistance = DEFAULT_REPULSION_CHANGE_DISTANCE;
