@@ -5,8 +5,12 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  devtool: 'source-map',
   entry: {
     app: './src/app.ts'
+  },
+  output: {
+    path: path.resolve(__dirname, 'public/dist')
   },
   module: {
     rules: [
@@ -35,4 +39,9 @@ module.exports = {
       '.ts', '.js',
     ],
   },
+  devServer: {
+    contentBase: "public",
+    open: true,
+    port: 3000
+  }
 };
