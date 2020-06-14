@@ -8,6 +8,23 @@ let pointSystem = null;
 let targetImage = null;
 
 // ==================================================
+// Utils
+// ==================================================
+function approxDistance(distanceX, distanceY) {
+  distanceX = Math.abs(distanceX);
+  distanceY = Math.abs(distanceY);
+
+  let max = Math.max(distanceX, distanceY);
+  let min = Math.min(distanceX, distanceY);
+  let approx = (max * 1007) + (min * 441);
+
+  if (max < (min << 4)) {
+    approx -= max * 40;
+  }
+
+  return (( approx + 512 ) >> 10 );
+}
+// ==================================================
 // ImageParticle Class
 // ==================================================
 class ImageParticle {
@@ -46,25 +63,25 @@ class ImageParticle {
   _updateStateByMouse() {
     const distanceX = mouseX - this.position.x;
     const distanceY = mouseY - this.position.y;
-    const distance = mag(distanceX, distanceY);
+    const distance = approxDistance(distanceX, distanceY);
     const pointCos = distanceX / distance;
     const pointSin = distanceY / distance;
 
     if (distance < repulsionChangeDistance) {
       this.gravity *= 0.6;
-      this.mouseRepulsion = max(0, this.mouseRepulsion * 0.5 - 0.01);
+      this.mouseRepulsion = Math.max(0, this.mouseRepulsion * 0.5 - 0.01);
       this.velocity.sub(pointCos * this.repulsion, pointSin * this.repulsion);
       this.velocity.mult(1 - this.mouseRepulsion);
     } else {
       this.gravity += (this.maxGravity - this.gravity) * 0.1;
-      this.mouseRepulsion = min(1, this.mouseRepulsion + 0.03);
+      this.mouseRepulsion = Math.min(1, this.mouseRepulsion + 0.03);
     }
   }
 
   _updateStateByOrigin() {
     const distanceX = this.originPosition.x - this.position.x;
     const distanceY = this.originPosition.y - this.position.y;
-    const distance = mag(distanceX, distanceY);
+    const distance = approxDistance(distanceX, distanceY);
 
     this.velocity.add(distanceX * this.gravity, distanceY * this.gravity);
     this.scale = this.originScale + this.originScale * distance / 512;
@@ -124,7 +141,7 @@ class ImageParticleSystem {
   _createParticles() {
     const imageWidth = targetImage.width;
     const imageHeight = targetImage.height;
-    const imageScale = min((window.innerWidth - PADDING * 2) / imageWidth, (window.innerHeight - PADDING * 2) / imageHeight);
+    const imageScale = Math.min((window.innerWidth - PADDING * 2) / imageWidth, (window.innerHeight - PADDING * 2) / imageHeight);
     const texture = this._createParticleTexture();
     const fractionSizeX = imageWidth / PARTICLE_SIZE;
     const fractionSizeY = imageHeight / PARTICLE_SIZE;
@@ -182,7 +199,7 @@ function setup() {
 }
 
 function draw() {
-  repulsionChangeDistance = max(0, repulsionChangeDistance - 1.5);
+  repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
 
   pointSystem.updateState();
   pointSystem.render();
