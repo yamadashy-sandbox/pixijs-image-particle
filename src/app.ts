@@ -4,7 +4,7 @@ import * as p5 from 'p5';
 import * as PIXI from 'pixi.js';
 
 const IMAGE_URL = 'https://avatars.githubusercontent.com/yamadashy';
-const PARTICLE_SIZE = 1; // image pixel size
+const PARTICLE_SIZE = 4; // image pixel size
 const PADDING = 10;
 const DEFAULT_REPULSION_CHANGE_DISTANCE = 80;
 
@@ -18,19 +18,25 @@ let mousePositionY: number = null;
 // ==================================================
 // Utils
 // ==================================================
-function approxDistance(distanceX: number, distanceY: number) {
-  distanceX = Math.abs(distanceX);
-  distanceY = Math.abs(distanceY);
+class Utils {
+  public static approxDistance(distanceX: number, distanceY: number) {
+    distanceX = Math.abs(distanceX);
+    distanceY = Math.abs(distanceY);
 
-  const max = Math.max(distanceX, distanceY);
-  const min = Math.min(distanceX, distanceY);
-  let approx = (max * 1007) + (min * 441);
+    const max = Math.max(distanceX, distanceY);
+    const min = Math.min(distanceX, distanceY);
+    let approx = (max * 1007) + (min * 441);
 
-  if (max < (min << 4)) {
-    approx -= max * 40;
+    if (max < (min << 4)) {
+      approx -= max * 40;
+    }
+
+    return (( approx + 512 ) >> 10 );
   }
 
-  return (( approx + 512 ) >> 10 );
+  public static random(min: number, max: number) {
+    return (Math.random() * (max - min)) + min;
+  }
 }
 
 // ==================================================
@@ -39,7 +45,7 @@ function approxDistance(distanceX: number, distanceY: number) {
 class ImageParticle {
   private position: p5.Vector;
   private originPosition: p5.Vector;
-  private velocity: p5.Vector;
+  private velocity: PIXI.Point;
   private repulsion: number;
   private mouseRepulsion: number;
   private gravity: number;
@@ -52,11 +58,11 @@ class ImageParticle {
   constructor(originPosition: p5.Vector, originScale: number, originColor: number[]) {
     this.position = originPosition.copy();
     this.originPosition = originPosition.copy();
-    this.velocity = p5instance.createVector(p5instance.random(0, 50), p5instance.random(0, 50));
-    this.repulsion = p5instance.random(1.0, 5.0);
+    this.velocity = new PIXI.Point(Utils.random(0, 50), Utils.random(0, 50));
+    this.repulsion = Utils.random(1.0, 5.0);
     this.mouseRepulsion = 1.0;
     this.gravity = 0.01;
-    this.maxGravity = p5instance.random(0.01, 0.04);
+    this.maxGravity = Utils.random(0.01, 0.04);
     this.scale = originScale;
     this.originScale = originScale;
     this.color = originColor;
@@ -72,14 +78,15 @@ class ImageParticle {
   }
 
   updateState() {
-    // calc position
+    // Calc position
     this.updateStateByMouse();
     this.updateStateByOrigin();
 
-    this.velocity.mult(0.95);
-    this.position.add(this.velocity);
+    this.velocity.x *= 0.95;
+    this.velocity.y *= 0.95;
+    this.position.add(this.velocity.x, this.velocity.y);
 
-    // update sprite state
+    // Update sprite state
     this.sprite.position.x = this.position.x;
     this.sprite.position.y = this.position.y;
   }
@@ -87,15 +94,17 @@ class ImageParticle {
   private updateStateByMouse() {
     const distanceX = mousePositionX - this.position.x;
     const distanceY = mousePositionY - this.position.y;
-    const distance = approxDistance(distanceX, distanceY);
+    const distance = Utils.approxDistance(distanceX, distanceY);
     const pointCos = distanceX / distance;
     const pointSin = distanceY / distance;
 
     if (distance < repulsionChangeDistance) {
       this.gravity *= 0.6;
       this.mouseRepulsion = Math.max(0, this.mouseRepulsion * 0.5 - 0.01);
-      this.velocity.sub(pointCos * this.repulsion, pointSin * this.repulsion);
-      this.velocity.mult(1 - this.mouseRepulsion);
+      this.velocity.x -= pointCos * this.repulsion;
+      this.velocity.y -= pointSin * this.repulsion;
+      this.velocity.x *= 1 - this.mouseRepulsion;
+      this.velocity.y *= 1 - this.mouseRepulsion;
     } else {
       this.gravity += (this.maxGravity - this.gravity) * 0.1;
       this.mouseRepulsion = Math.min(1, this.mouseRepulsion + 0.03);
@@ -105,9 +114,10 @@ class ImageParticle {
   private updateStateByOrigin() {
     const distanceX = this.originPosition.x - this.position.x;
     const distanceY = this.originPosition.y - this.position.y;
-    const distance = approxDistance(distanceX, distanceY);
+    const distance = Utils.approxDistance(distanceX, distanceY);
 
-    this.velocity.add(distanceX * this.gravity, distanceY * this.gravity);
+    this.velocity.x += distanceX * this.gravity;
+    this.velocity.y += distanceY * this.gravity;
     this.scale = this.originScale + this.originScale * distance / 512;
   }
 }
@@ -186,7 +196,7 @@ class ImageParticleSystem {
 
     for (let i = 0; i < fractionSizeX; i++) {
       for (let j = 0; j < fractionSizeY; j++) {
-        const imagePosition = p5instance.createVector(p5instance.int(i * PARTICLE_SIZE), p5instance.int(j * PARTICLE_SIZE));
+        const imagePosition = p5instance.createVector(Math.floor(i * PARTICLE_SIZE), Math.floor(j * PARTICLE_SIZE));
         const originPosition = imagePosition;
         const originScale = imageScale;
         const originColor = this.getPixel(imagePosition.x, imagePosition.y);
