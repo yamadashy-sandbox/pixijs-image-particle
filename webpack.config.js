@@ -46,8 +46,8 @@ module.exports = {
     }
   },
   devServer: {
-    contentBase: "public",
-    open: false,
-    port: 3000
+    contentBase: path.join(__dirname, "public"),
+    port: 3000,
+    compress: true
   }
 };
