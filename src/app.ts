@@ -3,7 +3,7 @@
 import * as p5 from 'p5';
 import * as PIXI from 'pixi.js';
 
-const IMAGE_URL = 'https://avatars.githubusercontent.com/u/5019072?v=3';
+const IMAGE_URL = 'https://avatars.githubusercontent.com/yamadashy';
 const PARTICLE_SIZE = 1; // image pixel size
 const PADDING = 10;
 const DEFAULT_REPULSION_CHANGE_DISTANCE = 80;
