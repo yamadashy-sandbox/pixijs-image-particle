@@ -11,7 +11,6 @@ const DEFAULT_REPULSION_CHANGE_DISTANCE = 80;
 let repulsionChangeDistance: number = DEFAULT_REPULSION_CHANGE_DISTANCE;
 let imageParticleSystem: ImageParticleSystem = null;
 let targetImage: p5.Image = null;
-let p5instance: p5 = null;
 let mousePositionX: number = null;
 let mousePositionY: number = null;
 
@@ -56,7 +55,7 @@ class ImageParticle {
   private sprite: PIXI.Sprite;
 
   constructor(originPosition: PIXI.Point, originScale: number, originColor: number[]) {
-    this.position = originPosition.clone()
+    this.position = originPosition.clone();
     this.originPosition = originPosition.clone();
     this.velocity = new PIXI.Point(Utils.random(0, 50), Utils.random(0, 50));
     this.repulsion = Utils.random(1.0, 5.0);
@@ -272,4 +271,4 @@ function sketch(p5instance: p5) {
   };
 }
 
-p5instance = new p5(sketch, document.body);
+new p5(sketch, document.body);
