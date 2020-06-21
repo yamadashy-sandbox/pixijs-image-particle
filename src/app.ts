@@ -43,8 +43,8 @@ class Utils {
 // ImageParticle Class
 // ==================================================
 class ImageParticle {
-  private position: p5.Vector;
-  private originPosition: p5.Vector;
+  private position: PIXI.Point;
+  private originPosition: PIXI.Point;
   private velocity: PIXI.Point;
   private repulsion: number;
   private mouseRepulsion: number;
@@ -55,9 +55,9 @@ class ImageParticle {
   private color: number[];
   private sprite: PIXI.Sprite;
 
-  constructor(originPosition: p5.Vector, originScale: number, originColor: number[]) {
-    this.position = originPosition.copy();
-    this.originPosition = originPosition.copy();
+  constructor(originPosition: PIXI.Point, originScale: number, originColor: number[]) {
+    this.position = originPosition.clone()
+    this.originPosition = originPosition.clone();
     this.velocity = new PIXI.Point(Utils.random(0, 50), Utils.random(0, 50));
     this.repulsion = Utils.random(1.0, 5.0);
     this.mouseRepulsion = 1.0;
@@ -84,7 +84,8 @@ class ImageParticle {
 
     this.velocity.x *= 0.95;
     this.velocity.y *= 0.95;
-    this.position.add(this.velocity.x, this.velocity.y);
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
 
     // Update sprite state
     this.sprite.position.x = this.position.x;
@@ -196,7 +197,7 @@ class ImageParticleSystem {
 
     for (let i = 0; i < fractionSizeX; i++) {
       for (let j = 0; j < fractionSizeY; j++) {
-        const imagePosition = p5instance.createVector(Math.floor(i * PARTICLE_SIZE), Math.floor(j * PARTICLE_SIZE));
+        const imagePosition = new PIXI.Point(Math.floor(i * PARTICLE_SIZE), Math.floor(j * PARTICLE_SIZE));
         const originPosition = imagePosition;
         const originScale = imageScale;
         const originColor = this.getPixel(imagePosition.x, imagePosition.y);
@@ -206,8 +207,10 @@ class ImageParticleSystem {
           continue;
         }
 
-        originPosition.mult(imageScale);
-        originPosition.add(offsetX + PADDING, offsetY + PADDING);
+        imagePosition.x *= imageScale;
+        imagePosition.y *= imageScale;
+        imagePosition.x += offsetX + PADDING;
+        imagePosition.y += offsetY + PADDING;
 
         const particle = new ImageParticle(originPosition, originScale, originColor);
         this.imageParticles.push(particle);
