@@ -1,6 +1,5 @@
 'use strict';
 
-import * as p5 from 'p5';
 import * as PIXI from 'pixi.js';
 
 const IMAGE_URL = 'https://avatars.githubusercontent.com/yamadashy';
@@ -9,8 +8,8 @@ const PADDING = 10;
 const DEFAULT_REPULSION_CHANGE_DISTANCE = 80;
 
 let repulsionChangeDistance: number = DEFAULT_REPULSION_CHANGE_DISTANCE;
-let imageParticleSystem: ImageParticleSystem = null;
-let targetImage: p5.Image = null;
+let imageParticleSystem: ImageParticleSystem;
+let targetImageTexture: PIXI.Texture;
 let mousePositionX: number = null;
 let mousePositionY: number = null;
 
@@ -157,13 +156,37 @@ class ImageParticleSystem {
   private setup() {
     this.app.stage.addChild(this.particleContainer);
     document.body.appendChild(this.renderer.view);
+
+    // mouse move
+    this.app.stage.interactive = true;
+    this.app.stage.on("mousemove", this.onMouseMove.bind(this));
+    this.app.stage.on("touchmove", this.onMouseMove.bind(this));
+
+    // tick
+    this.app.ticker.add(() => {
+      this.draw();
+    });
+  }
+
+  private onMouseMove(event: any) {
+    const newPosition = event.data.getLocalPosition(this.app.stage);
+    repulsionChangeDistance = DEFAULT_REPULSION_CHANGE_DISTANCE;
+    mousePositionX = newPosition.x;
+    mousePositionY = newPosition.y;
+  }
+
+  private draw() {
+    repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
+
+    this.updateStates();
+    this.render();
   }
 
   private getPixel(x: number, y: number): number[] {
-    const pixels = targetImage.pixels;
-    const idx = (y * targetImage.width + x) * 4;
+    const pixels = new Uint8Array();
+    const idx = (y * targetImageTexture.width + x) * 4;
 
-    if (x > targetImage.width || x < 0 || y > targetImage.height || y < 0) {
+    if (x > targetImageTexture.width || x < 0 || y > targetImageTexture.height || y < 0) {
       return [0, 0, 0, 0];
     }
 
@@ -186,8 +209,8 @@ class ImageParticleSystem {
   }
 
   private createParticles() {
-    const imageWidth = targetImage.width;
-    const imageHeight = targetImage.height;
+    const imageWidth = targetImageTexture.width;
+    const imageHeight = targetImageTexture.height;
     const imageScale = Math.min((window.innerWidth - PADDING * 2) / imageWidth, (window.innerHeight - PADDING * 2) / imageHeight);
     const fractionSizeX = imageWidth / PARTICLE_SIZE;
     const fractionSizeY = imageHeight / PARTICLE_SIZE;
@@ -236,39 +259,9 @@ class ImageParticleSystem {
   }
 }
 
+
 // ==================================================
 // Main
 // ==================================================
-function sketch(p5instance: p5) {
-  p5instance.preload = function() {
-    targetImage = p5instance.loadImage(IMAGE_URL);
-  };
-
-  p5instance.setup = function() {
-    targetImage.loadPixels();
-    p5instance.noStroke();
-    p5instance.frameRate(60);
-    imageParticleSystem = new ImageParticleSystem();
-  };
-
-  p5instance.draw = function() {
-    repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
-
-    imageParticleSystem.updateStates();
-    imageParticleSystem.render();
-  };
-
-  p5instance.mouseMoved = function() {
-    repulsionChangeDistance = DEFAULT_REPULSION_CHANGE_DISTANCE;
-    mousePositionX = p5instance.mouseX;
-    mousePositionY = p5instance.mouseY;
-  };
-
-  p5instance.touchMoved = function() {
-    repulsionChangeDistance = DEFAULT_REPULSION_CHANGE_DISTANCE;
-    mousePositionX = p5instance.mouseX;
-    mousePositionY = p5instance.mouseY;
-  };
-}
-
-new p5(sketch, document.body);
+targetImageTexture = PIXI.Texture.from(IMAGE_URL);
+imageParticleSystem = new ImageParticleSystem();
