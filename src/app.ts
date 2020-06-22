@@ -8,8 +8,6 @@ const PADDING = 10;
 const DEFAULT_REPULSION_CHANGE_DISTANCE = 80;
 
 let repulsionChangeDistance: number = DEFAULT_REPULSION_CHANGE_DISTANCE;
-let imageParticleSystem: ImageParticleSystem;
-let targetImageTexture: PIXI.Texture;
 let mousePositionX: number = null;
 let mousePositionY: number = null;
 
@@ -129,6 +127,7 @@ class ImageParticleSystem {
   private imageParticles: ImageParticle[];
   private renderer: PIXI.Renderer;
   private particleContainer: PIXI.ParticleContainer;
+  private targetImageTexture: PIXI.Texture;
 
   constructor() {
     this.imageParticles = [];
@@ -140,6 +139,7 @@ class ImageParticleSystem {
       antialias: true,
     });
     this.renderer = this.app.renderer;
+    this.targetImageTexture = PIXI.Texture.from(IMAGE_URL);
 
     this.createParticles();
     this.particleContainer = new PIXI.ParticleContainer(this.imageParticles.length, {
@@ -184,9 +184,9 @@ class ImageParticleSystem {
 
   private getPixel(x: number, y: number): number[] {
     const pixels = new Uint8Array();
-    const idx = (y * targetImageTexture.width + x) * 4;
+    const idx = (y * this.targetImageTexture.width + x) * 4;
 
-    if (x > targetImageTexture.width || x < 0 || y > targetImageTexture.height || y < 0) {
+    if (x > this.targetImageTexture.width || x < 0 || y > this.targetImageTexture.height || y < 0) {
       return [0, 0, 0, 0];
     }
 
@@ -209,8 +209,8 @@ class ImageParticleSystem {
   }
 
   private createParticles() {
-    const imageWidth = targetImageTexture.width;
-    const imageHeight = targetImageTexture.height;
+    const imageWidth = this.targetImageTexture.width;
+    const imageHeight = this.targetImageTexture.height;
     const imageScale = Math.min((window.innerWidth - PADDING * 2) / imageWidth, (window.innerHeight - PADDING * 2) / imageHeight);
     const fractionSizeX = imageWidth / PARTICLE_SIZE;
     const fractionSizeY = imageHeight / PARTICLE_SIZE;
@@ -263,5 +263,4 @@ class ImageParticleSystem {
 // ==================================================
 // Main
 // ==================================================
-targetImageTexture = PIXI.Texture.from(IMAGE_URL);
-imageParticleSystem = new ImageParticleSystem();
+new ImageParticleSystem();
