@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 
 const IMAGE_URL = 'https://avatars.githubusercontent.com/yamadashy';
-const PARTICLE_SIZE = 4; // image pixel size
+const PARTICLE_SIZE = 10; // image pixel size
 const PADDING = 10;
 const DEFAULT_REPULSION_CHANGE_DISTANCE = 80;
 
@@ -138,6 +138,8 @@ class ImageParticleSystem {
   }
 
   public setup() {
+    // Setup view
+    this.createParticleContainer();
     this.app.stage.addChild(this.particleContainer);
     document.body.appendChild(this.app.renderer.view);
 
@@ -150,7 +152,6 @@ class ImageParticleSystem {
     this.app.ticker.add(() => {
       repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
 
-      // Update states
       for (const imageParticle of this.imageParticles) {
         imageParticle.updateState();
       }
@@ -162,14 +163,7 @@ class ImageParticleSystem {
   public changeImage(imageUrl: string) {
     this.imageTexture = PIXI.Texture.from(imageUrl);
     this.createParticles();
-    this.particleContainer = new PIXI.ParticleContainer(this.imageParticles.length, {
-      vertices: false,
-      position: true,
-      rotation: false,
-      uvs: false,
-      tint: false
-    });
-    this.addParticlesToContainer();
+    this.addParticleSpritesToContainer();
   }
 
   private onMouseMove(event: any) {
@@ -193,6 +187,19 @@ class ImageParticleSystem {
       pixels[idx + 2],
       pixels[idx + 3]
     ];
+  }
+
+  private createParticleContainer() {
+    const fractionSizeX = window.innerWidth / PARTICLE_SIZE;
+    const fractionSizeY = window.innerHeight / PARTICLE_SIZE;
+
+    this.particleContainer = new PIXI.ParticleContainer(fractionSizeX * fractionSizeY, {
+      vertices: false,
+      position: true,
+      rotation: false,
+      uvs: false,
+      tint: false
+    });
   }
 
   private createParticles() {
@@ -227,7 +234,7 @@ class ImageParticleSystem {
     }
   }
 
-  private addParticlesToContainer() {
+  private addParticleSpritesToContainer() {
     const particleGraphics = new PIXI.Graphics();
     particleGraphics.beginFill(0xFFFFFF);
     particleGraphics.drawRect(0, 0, PARTICLE_SIZE, PARTICLE_SIZE);
