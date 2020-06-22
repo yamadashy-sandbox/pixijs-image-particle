@@ -123,7 +123,6 @@ class ImageParticle {
 class ImageParticleSystem {
   private app: PIXI.Application;
   private imageParticles: ImageParticle[];
-  private renderer: PIXI.Renderer;
   private particleContainer: PIXI.ParticleContainer;
   private imageTexture: PIXI.Texture;
 
@@ -136,12 +135,31 @@ class ImageParticleSystem {
       height: window.innerHeight,
       antialias: true,
     });
-    this.renderer = this.app.renderer;
-
-    this.setup();
   }
 
-  public loadImage(imageUrl: string) {
+  public setup() {
+    this.app.stage.addChild(this.particleContainer);
+    document.body.appendChild(this.app.renderer.view);
+
+    // Setup mouse event
+    this.app.stage.interactive = true;
+    this.app.stage.on("mousemove", this.onMouseMove.bind(this));
+    this.app.stage.on("touchmove", this.onMouseMove.bind(this));
+
+    // Setup tick event
+    this.app.ticker.add(() => {
+      repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
+
+      // Update states
+      for (const imageParticle of this.imageParticles) {
+        imageParticle.updateState();
+      }
+
+      this.app.renderer.render(this.app.stage);
+    });
+  }
+
+  public changeImage(imageUrl: string) {
     this.imageTexture = PIXI.Texture.from(imageUrl);
     this.createParticles();
     this.particleContainer = new PIXI.ParticleContainer(this.imageParticles.length, {
@@ -154,23 +172,6 @@ class ImageParticleSystem {
     this.addParticlesToContainer();
   }
 
-  private setup() {
-    this.app.stage.addChild(this.particleContainer);
-    document.body.appendChild(this.renderer.view);
-
-    // Setup mouse event
-    this.app.stage.interactive = true;
-    this.app.stage.on("mousemove", this.onMouseMove.bind(this));
-    this.app.stage.on("touchmove", this.onMouseMove.bind(this));
-
-    // Setup tick event
-    this.app.ticker.add(() => {
-      repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
-      this.updateStates();
-      this.renderer.render(this.app.stage);
-    });
-  }
-
   private onMouseMove(event: any) {
     const newPosition = event.data.getLocalPosition(this.app.stage);
     repulsionChangeDistance = DEFAULT_REPULSION_CHANGE_DISTANCE;
@@ -178,7 +179,7 @@ class ImageParticleSystem {
     mousePositionY = newPosition.y;
   }
 
-  private getPixel(x: number, y: number): number[] {
+  private getPixelColorFromImage(x: number, y: number): number[] {
     const pixels = new Uint8Array();
     const idx = (y * this.imageTexture.width + x) * 4;
 
@@ -192,16 +193,6 @@ class ImageParticleSystem {
       pixels[idx + 2],
       pixels[idx + 3]
     ];
-  }
-
-  private createParticleTexture() {
-    const graphics = new PIXI.Graphics();
-
-    graphics.beginFill(0xFFFFFF);
-    graphics.drawRect(0, 0, PARTICLE_SIZE, PARTICLE_SIZE);
-    graphics.endFill();
-
-    return this.renderer.generateTexture(graphics, PIXI.SCALE_MODES.LINEAR, 1);
   }
 
   private createParticles() {
@@ -218,7 +209,7 @@ class ImageParticleSystem {
         const imagePosition = new PIXI.Point(Math.floor(i * PARTICLE_SIZE), Math.floor(j * PARTICLE_SIZE));
         const originPosition = imagePosition;
         const originScale = imageScale;
-        const originColor = this.getPixel(imagePosition.x, imagePosition.y);
+        const originColor = this.getPixelColorFromImage(imagePosition.x, imagePosition.y);
 
         // Skip transparent pixel
         if (originColor[3] === 0) {
@@ -236,24 +227,22 @@ class ImageParticleSystem {
     }
   }
 
-  addParticlesToContainer() {
-    const texture = this.createParticleTexture();
+  private addParticlesToContainer() {
+    const particleGraphics = new PIXI.Graphics();
+    particleGraphics.beginFill(0xFFFFFF);
+    particleGraphics.drawRect(0, 0, PARTICLE_SIZE, PARTICLE_SIZE);
+    particleGraphics.endFill();
+    const particleTexture = this.app.renderer.generateTexture(particleGraphics, PIXI.SCALE_MODES.LINEAR, 1);
 
     for (const imageParticle of this.imageParticles) {
-      this.particleContainer.addChild(imageParticle.createSprite(texture));
-    }
-  }
-
-  updateStates() {
-    for (const imageParticle of this.imageParticles) {
-      imageParticle.updateState();
+      this.particleContainer.addChild(imageParticle.createSprite(particleTexture));
     }
   }
 }
-
 
 // ==================================================
 // Main
 // ==================================================
 const imageParticleSystem = new ImageParticleSystem();
-imageParticleSystem.loadImage(IMAGE_URL);
+imageParticleSystem.setup();
+imageParticleSystem.changeImage(IMAGE_URL);
