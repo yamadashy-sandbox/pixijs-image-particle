@@ -1,5 +1,3 @@
-'use strict';
-
 import * as PIXI from 'pixi.js';
 
 const IMAGE_URL = 'https://avatars.githubusercontent.com/yamadashy';
@@ -127,7 +125,7 @@ class ImageParticleSystem {
   private imageParticles: ImageParticle[];
   private renderer: PIXI.Renderer;
   private particleContainer: PIXI.ParticleContainer;
-  private targetImageTexture: PIXI.Texture;
+  private imageTexture: PIXI.Texture;
 
   constructor() {
     this.imageParticles = [];
@@ -139,8 +137,12 @@ class ImageParticleSystem {
       antialias: true,
     });
     this.renderer = this.app.renderer;
-    this.targetImageTexture = PIXI.Texture.from(IMAGE_URL);
 
+    this.setup();
+  }
+
+  public loadImage(imageUrl: string) {
+    this.imageTexture = PIXI.Texture.from(imageUrl);
     this.createParticles();
     this.particleContainer = new PIXI.ParticleContainer(this.imageParticles.length, {
       vertices: false,
@@ -150,21 +152,22 @@ class ImageParticleSystem {
       tint: false
     });
     this.addParticlesToContainer();
-    this.setup();
   }
 
   private setup() {
     this.app.stage.addChild(this.particleContainer);
     document.body.appendChild(this.renderer.view);
 
-    // mouse move
+    // Setup mouse event
     this.app.stage.interactive = true;
     this.app.stage.on("mousemove", this.onMouseMove.bind(this));
     this.app.stage.on("touchmove", this.onMouseMove.bind(this));
 
-    // tick
+    // Setup tick event
     this.app.ticker.add(() => {
-      this.draw();
+      repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
+      this.updateStates();
+      this.renderer.render(this.app.stage);
     });
   }
 
@@ -175,18 +178,11 @@ class ImageParticleSystem {
     mousePositionY = newPosition.y;
   }
 
-  private draw() {
-    repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
-
-    this.updateStates();
-    this.render();
-  }
-
   private getPixel(x: number, y: number): number[] {
     const pixels = new Uint8Array();
-    const idx = (y * this.targetImageTexture.width + x) * 4;
+    const idx = (y * this.imageTexture.width + x) * 4;
 
-    if (x > this.targetImageTexture.width || x < 0 || y > this.targetImageTexture.height || y < 0) {
+    if (x > this.imageTexture.width || x < 0 || y > this.imageTexture.height || y < 0) {
       return [0, 0, 0, 0];
     }
 
@@ -209,8 +205,8 @@ class ImageParticleSystem {
   }
 
   private createParticles() {
-    const imageWidth = this.targetImageTexture.width;
-    const imageHeight = this.targetImageTexture.height;
+    const imageWidth = this.imageTexture.width;
+    const imageHeight = this.imageTexture.height;
     const imageScale = Math.min((window.innerWidth - PADDING * 2) / imageWidth, (window.innerHeight - PADDING * 2) / imageHeight);
     const fractionSizeX = imageWidth / PARTICLE_SIZE;
     const fractionSizeY = imageHeight / PARTICLE_SIZE;
@@ -224,7 +220,7 @@ class ImageParticleSystem {
         const originScale = imageScale;
         const originColor = this.getPixel(imagePosition.x, imagePosition.y);
 
-        // 透明はスキップ
+        // Skip transparent pixel
         if (originColor[3] === 0) {
           continue;
         }
@@ -253,14 +249,11 @@ class ImageParticleSystem {
       imageParticle.updateState();
     }
   }
-
-  render() {
-    this.renderer.render(this.app.stage);
-  }
 }
 
 
 // ==================================================
 // Main
 // ==================================================
-new ImageParticleSystem();
+const imageParticleSystem = new ImageParticleSystem();
+imageParticleSystem.loadImage(IMAGE_URL);
