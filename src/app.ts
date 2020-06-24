@@ -112,8 +112,7 @@ class ImageParticle {
     this.position.y += this.velocity.y;
 
     // Update sprite state
-    this.sprite.position.x = this.position.x;
-    this.sprite.position.y = this.position.y;
+    this.sprite.position.set(this.position.x, this.position.y);
   }
 
   private updateStateByMouse() {
