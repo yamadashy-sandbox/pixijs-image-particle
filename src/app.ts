@@ -94,7 +94,7 @@ class ImageParticle {
   createSprite(texture: PIXI.Texture) {
     this.sprite = PIXI.Sprite.from(texture);
     this.sprite.tint = (this.color[0] << 16) + (this.color[1] << 8) + (this.color[2]);
-    this.sprite.scale.x = this.sprite.scale.y = this.scale;
+    this.sprite.scale.set(this.scale, this.scale)
 
     return this.sprite;
   }
