@@ -150,7 +150,7 @@ class ImageParticleSystem {
 
     // Setup tick event
     this.app.ticker.add(() => {
-      repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 1.5);
+      repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 0.5);
 
       for (const imageParticle of this.imageParticles) {
         imageParticle.updateState();
