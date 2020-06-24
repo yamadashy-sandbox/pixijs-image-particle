@@ -275,10 +275,11 @@ class ImageParticleSystem {
     particleGraphics.drawRect(0, 0, PARTICLE_SIZE, PARTICLE_SIZE);
     particleGraphics.endFill();
     const particleTexture = this.app.renderer.generateTexture(particleGraphics, PIXI.SCALE_MODES.LINEAR, 1);
+    let particleSprites = this.imageParticles.map(function(imageParticle) {
+      return imageParticle.createSprite(particleTexture);
+    });
 
-    for (const imageParticle of this.imageParticles) {
-      this.particleContainer.addChild(imageParticle.createSprite(particleTexture));
-    }
+    this.particleContainer.addChild(...particleSprites);
   }
 }
 
