@@ -35,6 +35,34 @@ class Utils {
   }
 }
 
+class PerformanceChecker
+{
+  private performanceCheckCount: number;
+  private performanceTimeSum: number;
+  private processStartTime: number;
+
+  constructor() {
+    this.performanceCheckCount = 0;
+    this.performanceTimeSum = 0;
+  }
+
+  public startProcess()
+  {
+    this.processStartTime = performance.now();
+  }
+
+  public endProcess()
+  {
+    this.performanceTimeSum += performance.now() - this.processStartTime;
+    this.performanceCheckCount++;
+  }
+
+  public getAverage()
+  {
+    return this.performanceTimeSum / this.performanceCheckCount;
+  }
+}
+
 // ==================================================
 // ImageParticle Class
 // ==================================================
@@ -127,8 +155,10 @@ class ImageParticleSystem {
   private imageParticles: ImageParticle[];
   private particleContainer: PIXI.ParticleContainer;
   private imageTexture: PIXI.Texture;
+  private performanceChecker: PerformanceChecker;
 
   constructor() {
+    this.performanceChecker = new PerformanceChecker();
     this.imageParticles = [];
     this.app = new PIXI.Application({
       view: document.getElementById('viewport') as HTMLCanvasElement,
@@ -154,11 +184,12 @@ class ImageParticleSystem {
     this.app.ticker.add(() => {
       repulsionChangeDistance = Math.max(0, repulsionChangeDistance - 0.5);
 
+      this.performanceChecker.startProcess();
       for (const imageParticle of this.imageParticles) {
         imageParticle.updateState();
       }
-
-      this.app.renderer.render(this.app.stage);
+      this.performanceChecker.endProcess();
+      console.log('Average time: ' + this.performanceChecker.getAverage());
     });
   }
 
@@ -234,6 +265,8 @@ class ImageParticleSystem {
         this.imageParticles.push(particle);
       }
     }
+
+    console.log('particle amount: ', this.imageParticles.length);
   }
 
   private addParticleSpritesToContainer() {
