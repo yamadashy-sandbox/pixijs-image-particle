@@ -75,7 +75,6 @@ class ImageParticle {
   private gravity: number;
   private maxGravity: number;
   private scale: number;
-  private originScale: number;
   private color: number[];
   private sprite: PIXI.Sprite;
 
@@ -88,7 +87,6 @@ class ImageParticle {
     this.gravity = 0.01;
     this.maxGravity = Utils.random(0.01, 0.04);
     this.scale = originScale;
-    this.originScale = originScale;
     this.color = originColor;
     this.sprite = null;
   }
@@ -106,10 +104,8 @@ class ImageParticle {
     this.updateStateByMouse();
     this.updateStateByOrigin();
 
-    this.velocity.x *= 0.95;
-    this.velocity.y *= 0.95;
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
+    this.velocity.set(this.velocity.x * 0.95, this.velocity.y * 0.95);
+    this.position.set(this.position.x + this.velocity.x, this.position.y + this.velocity.y);
 
     // Update sprite state
     this.sprite.position.set(this.position.x, this.position.y);
@@ -123,12 +119,11 @@ class ImageParticle {
     const pointSin = distanceY / distance;
 
     if (distance < repulsionChangeDistance) {
+      const invertRepulsionSub = 1 - this.mouseRepulsion;
       this.gravity *= 0.6;
       this.mouseRepulsion = Math.max(0, this.mouseRepulsion * 0.5 - 0.01);
-      this.velocity.x -= pointCos * this.repulsion;
-      this.velocity.y -= pointSin * this.repulsion;
-      this.velocity.x *= 1 - this.mouseRepulsion;
-      this.velocity.y *= 1 - this.mouseRepulsion;
+      this.velocity.x = (this.velocity.x - (pointCos * this.repulsion)) * invertRepulsionSub;
+      this.velocity.y = (this.velocity.y - (pointSin * this.repulsion)) * invertRepulsionSub;
     } else {
       this.gravity += (this.maxGravity - this.gravity) * 0.1;
       this.mouseRepulsion = Math.min(1, this.mouseRepulsion + 0.03);
@@ -138,11 +133,9 @@ class ImageParticle {
   private updateStateByOrigin() {
     const distanceX = this.originPosition.x - this.position.x;
     const distanceY = this.originPosition.y - this.position.y;
-    const distance = Utils.approxDistance(distanceX, distanceY);
 
     this.velocity.x += distanceX * this.gravity;
     this.velocity.y += distanceY * this.gravity;
-    this.scale = this.originScale + this.originScale * distance / 512;
   }
 }
 
@@ -265,7 +258,7 @@ class ImageParticleSystem {
       }
     }
 
-    console.log('particle amount: ', this.imageParticles.length);
+    console.log('Particle amount: ', this.imageParticles.length);
   }
 
   private addParticleSpritesToContainer() {
@@ -273,8 +266,9 @@ class ImageParticleSystem {
     particleGraphics.beginFill(0xFFFFFF);
     particleGraphics.drawRect(0, 0, PARTICLE_SIZE, PARTICLE_SIZE);
     particleGraphics.endFill();
+
     const particleTexture = this.app.renderer.generateTexture(particleGraphics, PIXI.SCALE_MODES.LINEAR, 1);
-    let particleSprites = this.imageParticles.map(function(imageParticle) {
+    const particleSprites = this.imageParticles.map(function(imageParticle) {
       return imageParticle.createSprite(particleTexture);
     });
 
