@@ -67,12 +67,9 @@ class PerformanceChecker
 // ImageParticle Class
 // ==================================================
 class ImageParticle {
-  private positionX: number;
-  private positionY: number;
-  private originPositionX: number;
-  private originPositionY: number;
-  private velocityX: number;
-  private velocityY: number;
+  private position: PIXI.Point;
+  private originPosition: PIXI.Point;
+  private velocity: PIXI.Point;
   private repulsion: number;
   private mouseRepulsion: number;
   private gravity: number;
@@ -83,12 +80,9 @@ class ImageParticle {
   private sprite: PIXI.Sprite;
 
   constructor(originPosition: PIXI.Point, originScale: number, originColor: number[]) {
-    this.positionX = originPosition.x;
-    this.positionY = originPosition.y;
-    this.originPositionX = originPosition.x;
-    this.originPositionY = originPosition.y;
-    this.velocityX = Utils.random(0, 50);
-    this.velocityY = Utils.random(0, 50);
+    this.position = originPosition.clone();
+    this.originPosition = originPosition.clone();
+    this.velocity = new PIXI.Point(Utils.random(0, 50), Utils.random(0, 50));
     this.repulsion = Utils.random(1.0, 5.0);
     this.mouseRepulsion = 1.0;
     this.gravity = 0.01;
@@ -112,19 +106,19 @@ class ImageParticle {
     this.updateStateByMouse();
     this.updateStateByOrigin();
 
-    this.velocityX *= 0.95;
-    this.velocityY *= 0.95;
-    this.positionX += this.velocityX;
-    this.positionY += this.velocityY;
+    this.velocity.x *= 0.95;
+    this.velocity.y *= 0.95;
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
 
     // Update sprite state
-    this.sprite.position.x = this.positionX;
-    this.sprite.position.y = this.positionY;
+    this.sprite.position.x = this.position.x;
+    this.sprite.position.y = this.position.y;
   }
 
   private updateStateByMouse() {
-    const distanceX = mousePositionX - this.positionX;
-    const distanceY = mousePositionY - this.positionY;
+    const distanceX = mousePositionX - this.position.x;
+    const distanceY = mousePositionY - this.position.y;
     const distance = Utils.approxDistance(distanceX, distanceY);
     const pointCos = distanceX / distance;
     const pointSin = distanceY / distance;
@@ -132,10 +126,10 @@ class ImageParticle {
     if (distance < repulsionChangeDistance) {
       this.gravity *= 0.6;
       this.mouseRepulsion = Math.max(0, this.mouseRepulsion * 0.5 - 0.01);
-      this.velocityX -= pointCos * this.repulsion;
-      this.velocityY -= pointSin * this.repulsion;
-      this.velocityX *= 1 - this.mouseRepulsion;
-      this.velocityY *= 1 - this.mouseRepulsion;
+      this.velocity.x -= pointCos * this.repulsion;
+      this.velocity.y -= pointSin * this.repulsion;
+      this.velocity.x *= 1 - this.mouseRepulsion;
+      this.velocity.y *= 1 - this.mouseRepulsion;
     } else {
       this.gravity += (this.maxGravity - this.gravity) * 0.1;
       this.mouseRepulsion = Math.min(1, this.mouseRepulsion + 0.03);
@@ -143,12 +137,12 @@ class ImageParticle {
   }
 
   private updateStateByOrigin() {
-    const distanceX = this.originPositionX - this.positionX;
-    const distanceY = this.originPositionY - this.positionY;
+    const distanceX = this.originPosition.x - this.position.x;
+    const distanceY = this.originPosition.y - this.position.y;
     const distance = Utils.approxDistance(distanceX, distanceY);
 
-    this.velocityX += distanceX * this.gravity;
-    this.velocityY += distanceY * this.gravity;
+    this.velocity.x += distanceX * this.gravity;
+    this.velocity.y += distanceY * this.gravity;
     this.scale = this.originScale + this.originScale * distance / 512;
   }
 }
