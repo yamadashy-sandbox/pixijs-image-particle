@@ -9,6 +9,8 @@ let repulsionChangeDistance: number = DEFAULT_REPULSION_CHANGE_DISTANCE;
 let mousePositionX: number = null;
 let mousePositionY: number = null;
 
+// TODO: レンダラーを分割したい
+
 // ==================================================
 // Utils
 // ==================================================
