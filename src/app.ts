@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 
 const IMAGE_URL = 'https://avatars.githubusercontent.com/yamadashy';
-const PARTICLE_SIZE = 1; // image pixel size
+const PARTICLE_SIZE = 10; // image pixel size
 const PADDING = 10;
 const DEFAULT_REPULSION_CHANGE_DISTANCE = 80;
 
@@ -183,8 +183,8 @@ class ImageParticleSystem {
 
     // Setup mouse event
     this.app.stage.interactive = true;
-    this.app.stage.on('mousemove', this.onMouseMove.bind(this));
-    this.app.stage.on('touchmove', this.onMouseMove.bind(this));
+    this.app.stage.on("mousemove", this.onMouseMove.bind(this));
+    this.app.stage.on("touchmove", this.onMouseMove.bind(this));
 
     // Setup tick event
     this.app.ticker.add(() => {
