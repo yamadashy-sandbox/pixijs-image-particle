@@ -177,8 +177,8 @@ class ImageParticleSystem {
 
     // Setup mouse event
     this.app.stage.interactive = true;
-    this.app.stage.on("mousemove", this.onMouseMove.bind(this));
-    this.app.stage.on("touchmove", this.onMouseMove.bind(this));
+    this.app.stage.on('mousemove', this.onMouseMove.bind(this));
+    this.app.stage.on('touchmove', this.onMouseMove.bind(this));
 
     // Setup tick event
     this.app.ticker.add(() => {
